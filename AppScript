@@ -1,0 +1,106 @@
+function sendApprovalEmail(e) {
+   var sheet = SpreadsheetApp.getActiveSheet();
+   var row =  SpreadsheetApp.getActiveSheet().getActiveCell().getRow();
+
+  var email = e.values[1];
+  var applyEmail = chkMail(e.values[6]) +"@planit-partners.com";
+  var emp_nm = e.values[2];
+  var reason = e.values[7];
+  var leave_day = e.values[3] + " ~ " + e.values[4];
+  var leave_dayString = leave_day.toString().replace(".", "-");
+  var leave_type = e.values[5];
+  var url = 'https://script.google.com/a/macros/planit-partners.com/s/AKfycbwE0uFGfhZU10dU2AME5m2Z4LKFw0Xd7LXH-YNjwzZeoYq0l7E/exec';
+
+  var approve = url + '?approval=true'+'&reply='+email+'&row='+row;
+  var reject = url + '?approval=false'+'&reply='+email+'&row='+row;
+  
+  var html = "<body>"+
+                "<h2>휴가 신청 내역</h2><br />"+
+                  "이름 : " + e.values[2] +"<br />"+
+                  "일자 : " + leave_dayString + "<br />" + 
+                  "종류 : " + leave_type + "<br />"+
+                  "사유 : " + reason + "<br /><br />"+
+                "<a href="+ approve +">승인</a>&nbsp;&nbsp;"+
+                "<a href="+ reject +">반려</a><br />"+
+             "</body>";
+
+  MailApp.sendEmail(applyEmail, e.values[2]+ "님이 휴가를 신청했습니다.", 
+                    "What no html?", {htmlBody: html});  
+  
+}
+
+
+
+function doGet(e){
+ 
+  var answer = (e.parameter.approval == 'true') ? '승인' : '반려'; 
+  var row = e.parameter.row
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1cAWTWgAErQricC_-64njMNeNnzRqYJxwUglpFiXn35A/edit");
+  var sheet = ss.getSheets()[0];
+  if(e.parameter.approval =='true'){
+     sheet.getRange(row,10).setValue("승인");
+  }else{
+     sheet.getRange(row,10).setValue("반려");
+  }
+  
+  
+
+  var emp_nm = sheet.getRange(row,3).getValue();
+  var reason = sheet.getRange(row,8).getValue();
+  
+  var startDate = Utilities.formatDate( new Date(sheet.getRange(row,4).getValue()), "GMT", "yyyy-MM-dd");
+  var endDate = Utilities.formatDate( new Date(sheet.getRange(row,5).getValue()), "GMT", "yyyy-MM-dd");
+  var leave_day = startDate + " ~ " + endDate;
+  var leave_dayString = leave_day.toString().replace(".", "-");
+  var leave_type = sheet.getRange(row,6).getValue();
+  
+  
+  var html = "<body>"+
+                "<h2>휴가 신청 내역</h2><br />"+
+                  "이름 : " + emp_nm +"<br />"+
+                  "일자 : " + leave_dayString + "<br />" + 
+                  "종류 : " + leave_type + "<br />"+
+                  "사유 : " + reason + "<br /><br />"+
+             "</body>";
+  
+  MailApp.sendEmail(e.parameter.reply, "휴가 "+ answer + " 되었습니다." ,"What no html?", {htmlBody: html});   
+
+  
+  
+  //결재가 승인이면 캘린더 등록
+  if (e.parameter.approval == 'true') {
+     insertCalendar(row);
+  }
+   
+  
+ 
+  var app = UiApp.createApplication();
+  app.add(app.createHTML("<h2>결재완료</h2>"))
+  return app
+}
+
+
+
+function insertCalendar(row){
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1cAWTWgAErQricC_-64njMNeNnzRqYJxwUglpFiXn35A/edit");
+  var sheet = ss.getSheets()[0];
+  var s = new Date(new Date(sheet.getRange(row,5).getValue())).getTime();
+  var es = new Date().setTime(s + 84600000);
+ 
+  var cal = CalendarApp.getCalendarById("planit-partners.com_er35kklujt7t8oapibvn4a62gk@group.calendar.google.com");
+  var event = cal.createEvent(sheet.getRange(row,3).getValue()+" " + sheet.getRange(row,6).getValue(),sheet.getRange(row,4).getValue(),  new Date(es));
+}
+
+
+function chkMail(paramName){
+  var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1cAWTWgAErQricC_-64njMNeNnzRqYJxwUglpFiXn35A/edit");
+  var sheet = ss.getSheets()[2];
+  var data = sheet.getDataRange().getValues();
+  var applyEmail ="";
+  for (var i = 0; i < data.length; i++) {
+    if(paramName == data[i][0]){
+      applyEmail = data[i][1];
+    }
+  }
+  return applyEmail;
+}
