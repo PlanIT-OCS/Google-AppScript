@@ -1,0 +1,121 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  // Or DocumentApp or FormApp.
+  ui.createMenu("담당자 상신")
+      .addItem("보고서 보내기", "costumerApproval")
+      .addToUi();
+  
+  ui.createMenu("비용상신")
+      .addItem("보고서 보내기", "costApproval")
+      .addToUi();
+  
+  
+    ui.createMenu("결재승인")
+      .addItem("보고서 보내기", "applyApproval")
+      .addToUi();
+}
+function costumerApproval(){
+  emailApproval('costumer');
+  setRangeAuth('costumer');
+}
+
+function costApproval(){
+  emailApproval('cost');
+}
+
+
+function applyApproval(){
+  emailApproval('apply');
+  setRangeAuth('apply');
+}
+
+
+function emailApproval(mode){
+  var emailSpreadsheetApp = SpreadsheetApp.getActiveSpreadsheet();
+  var emailSheet = emailSpreadsheetApp.getSheets()[1]; // 1은 참조시트로 수정 하지 않기로 규정
+  var req_ymd = emailSheet.getRange(2,2).getValue();
+  var req_nm= emailSheet.getRange(3,2).getValue();
+  var req_email = emailSheet.getRange(4,2).getValue();
+  var apply_email = emailSheet.getRange(5,2).getValue();
+  var last_apply_email = emailSheet.getRange(6,2).getValue();    // 관리자 송신 시 이메일
+  var sheetUrl = SpreadsheetApp.getActiveSpreadsheet().getUrl(); // 메일
+    
+  //현재 활성화된 시트의 풀 url를 첨부하여 메일을 보낸다.
+   var html = "<body>"+
+                "<h2>경비 신청 내역</h2><br />"+
+                "<a href=" + sheetUrl+ ">결재문서 바로가기</a>"
+             "</body>";
+  
+  if(mode =='costumer'){
+      
+    //결재자
+     MailApp.sendEmail(req_email, req_ymd +" 경비 정산해주세요." ,"What no html?", {htmlBody: html});  
+  }else if(mode =='cost'){
+    
+    //결재자
+     MailApp.sendEmail(apply_email, req_ymd +" " +req_nm+ " 경비 신청 메일입니다." ,"What no html?", {htmlBody: html});  
+    
+    //요청자
+     MailApp.sendEmail(req_email, req_ymd +" " +req_nm+ " 경비 신청이 되었습니다." ,"What no html?", {htmlBody: html});  
+  }else if(mode =='apply'){
+    
+    //최종 결재자(ex : 김성동)
+     MailApp.sendEmail(last_apply_email, req_ymd +" " +req_nm+ " 경비 신청이 처리되었습니다." ,"What no html?", {htmlBody: html});  
+  }
+   Logger.log("시트아이디 " + req_ymd);
+   Logger.log("시트아이디2 " + req_nm);
+  
+  
+}
+
+
+
+function approvalSendmail(result){
+   // 현재 활성화된 시트를 가져온다.
+   var sheetUrl = SpreadsheetApp.getActiveSpreadsheet().getUrl();
+   var sheetId =  SpreadsheetApp.getActiveSheet().getSheetId();
+   var FullUrl = sheetUrl + "#gid="+sheetId;
+   Logger.log("시트아이디 " + sheetUrl);
+   Logger.log("시트아이디2 " + FullUrl);
+  
+  
+  //현재 활성화된 시트의 풀 url를 첨부하여 메일을 보낸다.
+   var html = "<body>"+
+                "<h2>경비 신청 내역</h2><br />"+
+                "<a href=" + FullUrl+ ">결재문서 바로가기</a>"
+             "</body>";
+  
+  MailApp.sendEmail("admin@planit-partners.com", result+" 경비 신청 메일입니다." ,"What no html?", {htmlBody: html});   
+}
+
+
+
+function setRangeAuth(mode){
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  //Email주소를 가져오기 위한 변수
+  var emailSpreadsheetApp = SpreadsheetApp.getActiveSpreadsheet();
+  var emailSheet = emailSpreadsheetApp.getSheets()[1]; // 1은 참조시트로 수정 하지 않기로 규정
+  var req_email = emailSheet.getRange(4,2).getValue(); // 신청자
+  var last_apply_email = emailSheet.getRange(6,2).getValue(); // 관리자 송신 시 이메일
+  
+  // 담당자 상신 및 결재 승인일때만 보냄
+  if(mode =='costumer'){
+    var range = sheet.getRange(1, 1, sheet.getLastRow(), 12);
+  }else if(mode =='apply'){
+    var range = sheet.getRange(1, 17, sheet.getLastRow(), 1);    
+  }
+  var rules = range.getDataValidations();
+
+  
+ var protection = range.protect().setDescription('Sample protected range');
+
+ // Ensure the current user is an editor before removing others. Otherwise, if the user's edit
+ // permission comes from a group, the script will throw an exception upon removing the group.
+ var me = Session.getEffectiveUser();
+ protection.addEditor(last_apply_email);
+ protection.removeEditors(protection.getEditors());
+ if (protection.canDomainEdit()) {
+   protection.setDomainEdit(false);
+ }
+ 
+}
