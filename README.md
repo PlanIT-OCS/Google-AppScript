@@ -1,6 +1,13 @@
 # Google-LEAVE
 플랜잇파트너스에서 올리는 오픈 소스입니다.
-<html>
 
-<iframe src="https://drive.google.com/a/planit-partners.com/file/d/0B3G197L00t71Z09DWklpRzFDWVk/preview" width="640" height="480"></iframe>
-</html>
+
+
+1. 구글 스프레드시트와 AppScript를 이용한 휴가관리입니다.
+   - 휴가 신청서를 통해 관련 내용을 입력 후 보내기
+   - 지정한 승인자가 메일에서 승인 반려 여부 판단
+   - 해당 내역은 구글 스프레드시트에 저장
+
+
+
+   
