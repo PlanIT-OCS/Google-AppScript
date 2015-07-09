@@ -4,5 +4,5 @@
    - 해당 내역은 구글 스프레드시트에 저장
 
 
-
-   
+# 관련문서
+https://docs.google.com/document/d/1jNKpBBS_hMtI4uTxpZtaqgm9_jbAL2QT2Rcfdg-eT7E/edit?usp=sharing
