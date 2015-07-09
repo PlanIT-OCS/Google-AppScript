@@ -7,7 +7,7 @@
    - 휴가 신청서를 통해 관련 내용을 입력 후 송신
    - 지정한 승인자가 메일에서 승인 반려 여부 판단
    - 해당 내역은 구글 스프레드시트에 저장
-   - 메뉴얼: https://docs.google.com/document/d/1jNKpBBS_hMtI4uTxpZtaqgm9_jbAL2QT2Rcfdg-eT7E/edit?usp=sharing
+   - 메뉴얼 : https://docs.google.com/document/d/1jNKpBBS_hMtI4uTxpZtaqgm9_jbAL2QT2Rcfdg-eT7E/edit?usp=sharing
    
 ----
 
